@@ -87,41 +87,42 @@ pub fn parse_org_file(path: PathBuf) -> FileData {
     };
 
     if let Ok(lines) = read_lines(path) {
-        let mut current_level = 0;
+        let mut current_links_vec = &mut data.links;
         let mut current_heading_vec = &mut data.heading;
+        let mut current_level = 0;
+        let mut len = 0;
         for (index, line) in lines.enumerate() {
             let line = line.unwrap();
             if let Some(head) = is_heading(&line, index + 1) {
-                let mut len = (&current_heading_vec).len();
-                if current_level != head.level - 1{
+                len = (&current_heading_vec).len();
+                if current_level > head.level - 1 {
                     current_level = 0;
+                    current_links_vec = &mut data.links;
                     current_heading_vec = &mut data.heading;
-                    while len != 0 && (&current_heading_vec[len - 1]).level != head.level - 1 {
+                    len = (&current_heading_vec).len();
+                    while len != 0 && (&current_heading_vec[len - 1]).level < head.level - 1 {
                         current_level = (&current_heading_vec[len - 1]).level;
+                        unsafe{
+                            current_links_vec = &mut *(&mut current_heading_vec[len - 1].links as *mut Vec<Links>);
+                        }
                         current_heading_vec = &mut current_heading_vec[len - 1].heading;
                         len = (&current_heading_vec).len();
                     }
                 }
-                if head.line_number == 4{
-                    println!("{:#?}",&head);
-                    println!("{:#?}",data);
-                    loop{}
-                }
                 current_heading_vec.push(head);
                 len += 1;
                 current_level = (&current_heading_vec[len - 1]).level;
+                unsafe{
+                    current_links_vec = &mut *(&mut current_heading_vec[len - 1].links as *mut Vec<Links>);
+                }
                 current_heading_vec = &mut current_heading_vec[len - 1].heading;
             } else if let Some(link) = is_link(&line, index + 1) {
-                // let len = (&current_heading_vec).len();
-                // if len == 0{
-                //     data.links.push(link);
-                // }else{
-                //     current_heading_vec[len-1].links.push(link);
-                // }
+                current_links_vec.push(link);
             } else {
                 println!("{line}");
             }
         }
     }
+    println!("{:#?}",&data);
     data
 }
