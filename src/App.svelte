@@ -1,43 +1,81 @@
 <script lang="ts">
-    import Tabs from "./lib/Tabs.svelte";
+    import Node from "./lib/Node.svelte";
+    import  from "./lib/Node.svelte";
     import FileList from "./lib/FileList.svelte";
-    import { invoke } from "@tauri-apps/api/tauri";
+ // import { invoke } from "@tauri-apps/api/tauri";
+    import type { FileData } from "./types/data";
 
-    invoke("greet", { name: "testing" }).then((message) =>
-        console.log(message)
-    );
-    let tabOpen = "";
+ // invoke("greet", { name: "testing" }).then((message) =>
+ //     console.log(message)
+ // );
+    let fileOpen = "";
     let fileList = ["Content"];
-    let items = [
-        {
-            tab_title: "Content",
-            heading_or_links: {
-                heading: "Level1",
-                heading_or_links: {
-                    heading: "Level2",
-                    heading_or_links: [
-                        {
-                            name: "testing",
-                            link: "hello",
-                            read_till: 5,
-                            line_number: 1,
-                        },
-                    ],
-                },
+    let item: FileData = {
+        file_title: "Content",
+        heading: [
+            {
+                title: "Level1",
+                heading: [
+                    {
+                        heading: "Level2",
+                        heading_or_links: [
+                            {
+                                name: "testing",
+                                link: "hello",
+                                likeability: "Must Read",
+                                read_till: 5,
+                                line_number: 1,
+                            },
+                        ],
+                    },
+                ],
+                links: [
+                    {
+                        name: "testing 2",
+                        link: "hello2",
+                        likeability: "Must Read",
+                        read_till: 2,
+                        line_number: 2,
+                    },
+                    {
+                        name: "testing 2",
+                        link: "hello2",
+                        likeability: "Must Read",
+                        read_till: 2,
+                        line_number: 2,
+                    },
+                ],
             },
-        },
-    ];
+        ],
+        links: [],
+    };
 
     const FileListClick = (file: string) => {
-        tabOpen = file;
+        fileOpen = file;
     };
 </script>
 
 <main class="h-full w-full bg-[#131516]">
-    {#if tabOpen == ""}
+    {#if fileOpen == ""}
         <FileList list={fileList} {FileListClick} />
     {:else}
-        <Tabs {items} activeTabValue={tabOpen} {FileListClick} />
+        <div class="justify-center flex">
+            <button
+                class="my-5 py-3 px-6 text-white border-0 bg-[#42414d] rounded"
+                on:click={() => {
+                    FileListClick("");
+                }}
+                on:keypress={() => {
+                    FileListClick("");
+                }}>Home</button
+            >
+        </div>
+        <div class="px-10">
+            <div class="box h-full">
+                <Node data={item.heading} />
+                <Links data={item.links} />
+            </div>
+        </div>
     {/if}
 </main>
 

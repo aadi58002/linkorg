@@ -14,16 +14,21 @@
 //         .expect("error while running tauri application");
 // }
 
-
 mod config;
 mod org;
 
 use crate::{config::config::parse_config, org::file::find_org_files};
 use dirs;
+use org::parse::parse_org_file;
 
-fn main(){
-    let config_path = dirs::config_dir().unwrap().join(env!("CARGO_PKG_NAME")).join("config.toml");
+fn main() {
+    let config_path = dirs::config_dir()
+        .unwrap()
+        .join(env!("CARGO_PKG_NAME"))
+        .join("config.toml");
     let config = parse_config(config_path);
     let files = find_org_files(config.notes_dir);
-    for file in 
+    for file in files {
+        println!("{:?}", parse_org_file(file));
+    }
 }

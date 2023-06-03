@@ -1,9 +1,13 @@
-use std::{fs,path::{PathBuf,Path}, io::Write};
-use serde::{Serialize,Deserialize};
 use dirs;
+use serde::{Deserialize, Serialize};
+use std::{
+    fs,
+    io::Write,
+    path::{Path, PathBuf},
+};
 
-#[derive(Serialize,Deserialize,Default,Debug)]
-pub struct Config{
+#[derive(Serialize, Deserialize, Default, Debug)]
+pub struct Config {
     pub notes_dir: PathBuf,
 }
 
@@ -26,22 +30,24 @@ fn expand_tilde(path: &PathBuf) -> Option<PathBuf> {
     })
 }
 
-fn create_config(config_path: &PathBuf){
-    let config_dir = config_path.parent().expect("Unable to get the parent directory from config path");
+fn create_config(config_path: &PathBuf) {
+    let config_dir = config_path
+        .parent()
+        .expect("Unable to get the parent directory from config path");
     let _ = std::fs::create_dir_all(config_dir);
     let default_config = toml::to_string(&Config::default()).unwrap();
     let mut config_file = std::fs::File::create(config_path).expect("Unable to create config file");
-    config_file.write_all(default_config.as_bytes()).expect("Unable to write default config to the config file");
+    config_file
+        .write_all(default_config.as_bytes())
+        .expect("Unable to write default config to the config file");
 }
 
-pub fn parse_config(config_path: PathBuf) -> Config{
-
-    if !config_path.exists(){
+pub fn parse_config(config_path: PathBuf) -> Config {
+    if !config_path.exists() {
         create_config(&config_path);
     }
-    
-    
-    let mut config  = match fs::read_to_string(config_path){
+
+    let mut config = match fs::read_to_string(config_path) {
         Ok(val) => toml::from_str(val.as_str()).unwrap(),
         Err(_) => Config::default(),
     };

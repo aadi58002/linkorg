@@ -1,3 +1,19 @@
-export type LinkData = { name: string; link: string; read_till: number };
+export type FileData = {
+  file_title: string;
+  heading: HeadingItem[];
+  links: LinkItem[];
+};
 
-export type FileData = { heading: string; HeadingOrLinks: FileData } | LinkData[];
+export type HeadingData = {
+  title: string;
+  heading: HeadingItem[];
+  links: LinkItem[];
+};
+
+export type LinkData = {
+  name: string;
+  link: string;
+  likeability: string;
+  read_till: number;
+  line_number: number;
+};

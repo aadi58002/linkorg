@@ -1,29 +1,37 @@
 <script lang="ts">
-    import type { FileData, LinkData } from "../types/data.d";
-    import Links from '../lib/Links.svelte';
-    export let data: FileData;
+    import type { HeadingData } from "../types/data.d";
+    export let data: HeadingData[];
+    console.log(data)
     export let indent = 0;
+    let open = Array(data.length).fill(true);
 
-    let open = true;
-
-    function toggleOpen() {
-        open = !open;
-    }
-    function checkForHeading(val: FileData): boolean {
-        console.log(val,!Array.isArray(val))
-        return !Array.isArray(val);
+    function toggleOpen(i: number) {
+        open[i] = !open[i];
     }
 </script>
 
-{#if checkForHeading(data)}
-    <h3 class="text-white" style="padding-left: {indent}px" on:click={toggleOpen} on:keypress={toggleOpen}>
-        {data.heading}
-        {open ? "(open)" : "(closed)"}
-    </h3>
-    {#if open}
-        <svelte:self data={data.HeadingOrLinks} indent={indent + 24} />
-    {/if}
-{:else}
-    <Links links={data}/>
-{/if}
-
+    {#each data as element,i}
+        {#if element.heading !== undefined}
+            <h3
+                class="text-white"
+                style="padding-left: {indent}px"
+                on:click={() => {toggleOpen(i)}}
+                on:keypress={() => {toggleOpen(i)}}
+            >
+                {element.heading}
+                {open[i] ? "(open)" : "(closed)"}
+            </h3>
+            {#if open[i]}
+              <svelte:self
+                data={element.heading_or_links}
+                indent={indent + 24}
+              />
+            {/if}
+        {:else}
+            <div class="flex grow-1 justify-between text-white" style="padding-left: {indent}px">
+                <p>{element.name}</p>
+                <p>{element.link}</p>
+                <p>{element.read_till}</p>
+            </div>
+        {/if}
+    {/each}
