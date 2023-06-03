@@ -29,6 +29,6 @@ fn main() {
     let config = parse_config(config_path);
     let files = find_org_files(config.notes_dir);
     for file in files {
-        println!("{:?}", parse_org_file(file));
+        let _ = parse_org_file(file);
     }
 }

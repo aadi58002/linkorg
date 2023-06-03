@@ -1,7 +1,6 @@
 <script lang="ts">
     import type { LinkData } from "../types/data.d";
     export let data: LinkData[];
-    console.log(data);
     export let indent = 0;
     indent += 12;
 </script>

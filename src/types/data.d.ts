@@ -1,13 +1,14 @@
 export type FileData = {
   file_title: string;
-  heading: HeadingItem[];
+  heading: HeadingData[];
   links: LinkItem[];
 };
 
 export type HeadingData = {
   title: string;
-  heading: HeadingItem[];
-  links: LinkItem[];
+  level: number;
+  heading: HeadingData[];
+  links: LinkData[];
 };
 
 export type LinkData = {

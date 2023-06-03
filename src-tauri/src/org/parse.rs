@@ -7,29 +7,29 @@ use std::io::{self, BufRead};
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Links {
-    name: String,
-    link: String,
-    read_till: String,
-    likeability: Option<String>,
-    line_number: usize,
+pub struct Links {
+    pub name: String,
+    pub link: String,
+    pub read_till: String,
+    pub likeability: Option<String>,
+    pub line_number: usize,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Heading {
-    title: String,
-    #[serde(skip_serializing)]
-    level: usize,
-    line_number: usize,
-    heading: Vec<Heading>,
-    links: Vec<Links>,
+pub struct Heading {
+    pub title: String,
+    pub level: usize,
+    pub line_number: usize,
+    pub heading: Vec<Heading>,
+    pub links: Vec<Links>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FileData {
-    tab_title: String,
-    heading: Vec<Heading>,
-    links: Vec<Links>,
+    pub file_title: String,
+    pub level: usize,
+    pub heading: Vec<Heading>,
+    pub links: Vec<Links>,
 }
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
@@ -80,19 +80,44 @@ fn is_heading(content: &String, line_number: usize) -> Option<Heading> {
 
 pub fn parse_org_file(path: PathBuf) -> FileData {
     let mut data = FileData {
-        tab_title: format!("{}", path.file_name().unwrap().to_str().unwrap()).to_string(),
+        file_title: format!("{}", path.file_name().unwrap().to_str().unwrap()).to_string(),
+        level: 0,
         heading: vec![],
         links: vec![],
     };
 
     if let Ok(lines) = read_lines(path) {
-        let mut dynamic_heading: &mut Vec<Heading> = vec![&mut data.heading];
+        let mut current_level = 0;
+        let mut current_heading_vec = &mut data.heading;
         for (index, line) in lines.enumerate() {
             let line = line.unwrap();
             if let Some(head) = is_heading(&line, index + 1) {
-                println!("head: {:?}", head);
+                let mut len = (&current_heading_vec).len();
+                if current_level != head.level - 1{
+                    current_level = 0;
+                    current_heading_vec = &mut data.heading;
+                    while len != 0 && (&current_heading_vec[len - 1]).level != head.level - 1 {
+                        current_level = (&current_heading_vec[len - 1]).level;
+                        current_heading_vec = &mut current_heading_vec[len - 1].heading;
+                        len = (&current_heading_vec).len();
+                    }
+                }
+                if head.line_number == 4{
+                    println!("{:#?}",&head);
+                    println!("{:#?}",data);
+                    loop{}
+                }
+                current_heading_vec.push(head);
+                len += 1;
+                current_level = (&current_heading_vec[len - 1]).level;
+                current_heading_vec = &mut current_heading_vec[len - 1].heading;
             } else if let Some(link) = is_link(&line, index + 1) {
-                println!("link: {:?}", link);
+                // let len = (&current_heading_vec).len();
+                // if len == 0{
+                //     data.links.push(link);
+                // }else{
+                //     current_heading_vec[len-1].links.push(link);
+                // }
             } else {
                 println!("{line}");
             }

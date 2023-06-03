@@ -1,6 +1,6 @@
 <script lang="ts">
     import Node from "./lib/Node.svelte";
-    import  from "./lib/Node.svelte";
+    import Links from "./lib/Links.svelte";
     import FileList from "./lib/FileList.svelte";
  // import { invoke } from "@tauri-apps/api/tauri";
     import type { FileData } from "./types/data";
@@ -11,14 +11,17 @@
     let fileOpen = "";
     let fileList = ["Content"];
     let item: FileData = {
-        file_title: "Content",
+        file_tile: "Content",
         heading: [
             {
                 title: "Level1",
+                level: 1,
                 heading: [
                     {
-                        heading: "Level2",
-                        heading_or_links: [
+                        title: "Level2",
+                        heading: [],
+                        level: 2,
+                        links: [
                             {
                                 name: "testing",
                                 link: "hello",
@@ -72,7 +75,9 @@
         </div>
         <div class="px-10">
             <div class="box h-full">
-                <Node data={item.heading} />
+                {#if item.heading.length != 0}
+                    <Node data={item.heading} />
+                {/if}
                 <Links data={item.links} />
             </div>
         </div>
