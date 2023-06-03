@@ -1,7 +1,28 @@
-# Tauri + Svelte + Typescript
+# Link Org
 
-This template should help get you started developing with Tauri, Svelte and TypeScript in Vite.
+This project aims to create a cross platform gui frontend for the `.org` for emacs with have links in the format of `[[link][description]]`
 
-## Recommended IDE Setup
+There can be heading in org files which start with `*` with the no of `*` represting the level or depth of the heading
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+# How to run
+## For development
+```bash
+pnpm i
+pnpm tauri dev
+```
+
+This will run the svelte frontend as well as the rust backend
+
+# Working
+## Backend
+The rust backend uses the glob crate to search through all the org files given under the path from the config file.
+
+After that using the regular expression in the parse.rs file it outputs a FileData struct which represents the data inside the file.
+
+## Frontend
+This then coverts the FileData struct into a graphical html and ts website which is then provided with data through the tauri interface from rust to js.
+
+# Future Goals
+- [ ] Support more of the org file syntax like tags,File Description
+- [ ] Remove unsafe code from the parser
+- [ ] Possible to update the file from the svelte frontend
