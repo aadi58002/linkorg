@@ -1,11 +1,8 @@
 *    Level1
-[[a][b]]        (final) (Must Must read)                                                                 -- after 78
+[[https://www.amazon.in/Subtle-Art-Not-Giving/dp/0062641549][The Subtle Art of Not Giving a F*ck]]          (A life lesson on how to not keep worrying about things)(Must read)  -- after 20
 ** Level 2
-[[c][d]]    (Must Must read)                                                          -- after 7
+[[https://www.amazon.in/EVERYTHING-FUCKED-Mark-Manson/dp/B08QHQ7WN5/ref=d_zg-te-pba_sccl_3_6/260-6159620-1314115?pd_rd_w=Nt2LI&content-id=amzn1.sym.19fd9d5f-cb83-4468-ba97-e75ea6b21028&pf_rd_p=19fd9d5f-cb83-4468-ba97-e75ea6b21028&pf_rd_r=N5PNRTC2P9NHJJ2RSQMR&pd_rd_wg=IEvgC&pd_rd_r=2afc8c52-6f43-48d0-9ba1-f624d0af3339&pd_rd_i=B08QHQ7WN5&psc=1][EVERYTHING IS FUCKED]]                       (Good read) --after 19
 * Level 1 2
-[[i][J]]                       (testing)                            -- after 113
 ** Level 2 2
-[[e][f]]  (test)(Must Must read)                 -- after 11
 *** Level 3 2
-[[g][h]]                 -- after 11
 

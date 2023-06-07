@@ -16,7 +16,6 @@
 <div>
     {#each data as element, i}
         <h3
-            class="text-white"
             style="padding-left: {indent}px"
             on:click={() => {
                 toggleOpen(i);
@@ -25,12 +24,12 @@
                 toggleOpen(i);
             }}
         >
-            {element.title} + {element.level}
+            {element.title}
             {open[i] ? "(open)" : "(closed)"}
         </h3>
         {#if open[i]}
-            <svelte:self data={element.heading} indent={indent} />
             <Links data={element.links} indent={indent}/>
+            <svelte:self data={element.heading} indent={indent} />
         {/if}
     {/each}
 </div>
