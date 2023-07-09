@@ -6,13 +6,17 @@ There can be heading in org files which start with `*` with the no of `*` repres
 
 Link format
 Lets take a book for example
-[[Book link][Book name]]         (Personal thoughts)(Must read)  -- after 34
+Links That will match
+- Support for normal links  
+`  [[Book link][Book name]]         (Personal thoughts)   (Must read)   -- after 34`
+- Support for links inside a table  
+`| [[Book link][Book name]]       | (Personal thoughts) | (Must read) | -- after 34 |`
 
-Book link             - Link to open the book in browser
-Book name             - Name of the book
-Personal Thoughts     - Personal throughs on the book  (Optional)
-Must read             - How much do you want to read the book (Optional)
-after 34              - Read the book after page 34
+Book link             - Link to open the book in browser  
+Book name             - Name of the book  
+Personal Thoughts     - Personal throughs on the book  (Optional)  
+Must read             - How much do you want to read the book (Optional)  
+after 34              - Read the book after page 34  
 
 # How to run
 ## Setup
