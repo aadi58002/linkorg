@@ -52,7 +52,7 @@ where
 
 fn is_link(content: &String, line_number: usize) -> Option<Links> {
     lazy_static! {
-        static ref RE_LINKS: Regex = Regex::new(r"^\[\[(.*)\]\[(.*)\]\] *(?:\(([^()]*[^[Rr]ead])\))?(?:\(([^()]*[Rr]ead)\))?.*-- ?after ?(\w*)").unwrap();
+        static ref RE_LINKS: Regex = Regex::new(r"^(?: *\| *)?\[\[(.*)\]\[(.*)\]\](?: *\|)? *(?:\(([^()]*[^[Rr]ead])\))?(?: *\|)? *(?:\(([^()]*[Rr]ead)\))?(?: *\|)?.*-- ?after ?([\w\.]*) *(?: *\|)?").unwrap();
     }
     if let Some(val) = RE_LINKS.captures(content.as_str()) {
         let description = match val.get(3).map(|m| m.as_str()) {
