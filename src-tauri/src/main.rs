@@ -9,7 +9,7 @@ use std::path::PathBuf;
 use crate::{config::config::parse_config, org::file::find_org_files};
 use config::config::Config;
 use dirs;
-use org::parse::{parse_org_file, FileData};
+use org::parse::{read_org_file, FileData};
 
 #[tauri::command]
 fn get_config() -> Config {
@@ -27,7 +27,7 @@ fn get_files_list(notes_dir: PathBuf) -> Vec<PathBuf> {
 
 #[tauri::command]
 fn get_file_data(file: PathBuf) -> FileData {
-    parse_org_file(file)
+    read_org_file(file)
 }
 
 #[tauri::command]
@@ -54,6 +54,6 @@ fn main() {
 //         .join("config.toml");
 //     let config = parse_config(config_path);
 //     let files = find_org_files(config.notes_dir);
-//     let _ = parse_org_file(files[0].clone());
-//     // println!("{:#?}", parse_org_file(files[0].clone()));
+//     let _ = read_org_file(files[0].clone());
+//     // println!("{:#?}", read_org_file(files[0].clone()));
 // }

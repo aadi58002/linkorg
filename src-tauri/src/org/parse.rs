@@ -3,11 +3,20 @@ use regex::Regex;
 
 use serde::{Deserialize, Serialize};
 use std::fs::File;
-use std::io::{self, BufRead};
+use std::io::{self, BufRead, BufReader, Lines};
 use std::path::{Path, PathBuf};
 
+lazy_static! {
+    static ref RE_LINKS: Regex = Regex::new(r"^(?: *\|)? *\[\[(.*)\]\[(.*)\]\](?: *\|)? *(?:\(([^()]*[^[Rr]ead])\))?(?: *\|)? *(?:\(([^()]*[Rr]ead)\))?(?: *\|)?.*-- ?after ?([\w\.]*) *(?: *\|)?").unwrap();
+    static ref RE_HEADING: Regex = Regex::new(r"^(\*+) *(\w.*)").unwrap();
+    static ref RE_TITLE: Regex = Regex::new(r"#\+(?i)title: *(.*)").unwrap();
+    static ref RE_DATE: Regex = Regex::new(r"#\+(?i)date: *\[(.*)\]").unwrap();
+    static ref RE_TAGS: Regex = Regex::new(r"#\+(?i)filetags: *:(.*):*").unwrap();
+    static ref RE_DESCRIPTION: Regex = Regex::new(r"#\+(?i)description: *(.*)").unwrap();
+}
+
 #[derive(Debug, Deserialize, Serialize)]
-pub struct Links {
+pub struct Link {
     pub name: String,
     pub link: String,
     pub read_till: String,
@@ -22,27 +31,38 @@ pub struct Heading {
     pub level: usize,
     pub line_number: usize,
     pub heading: Vec<Heading>,
-    pub links: Vec<Links>,
+    pub links: Vec<Link>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FileData {
     pub file_name: String,
-    pub file_meta_data: Option<FileMetaData>,
+    pub file_meta_data: FileMetaData,
     pub level: usize,
     pub heading: Vec<Heading>,
-    pub links: Vec<Links>,
+    pub links: Vec<Link>,
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct FileMetaData {
-    pub file_title: Option<String>,
-    pub file_description: Option<String>,
-    pub file_creation_date: Option<String>,
+    pub file_title: String,
+    pub file_description: String,
+    pub file_date: String,
     pub file_tags: Vec<String>,
 }
 
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+impl Default for FileMetaData {
+    fn default() -> Self {
+        FileMetaData {
+            file_title: "No title".to_string(),
+            file_description: "No description".to_string(),
+            file_date: "No creation Date found".to_string(),
+            file_tags: vec![],
+        }
+    }
+}
+
+fn read_lines<P>(filename: P) -> io::Result<Lines<BufReader<File>>>
 where
     P: AsRef<Path>,
 {
@@ -50,11 +70,21 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn is_link(content: &String, line_number: usize) -> Option<Links> {
-    lazy_static! {
-        static ref RE_LINKS: Regex = Regex::new(r"^(?: *\|)? *\[\[(.*)\]\[(.*)\]\](?: *\|)? *(?:\(([^()]*[^[Rr]ead])\))?(?: *\|)? *(?:\(([^()]*[Rr]ead)\))?(?: *\|)?.*-- ?after ?([\w\.]*) *(?: *\|)?").unwrap();
-    }
-    if let Some(val) = RE_LINKS.captures(content.as_str()) {
+enum LineType {
+    Link(Link),
+    Heading(Heading),
+    MetaData(MetaData),
+}
+
+enum MetaData {
+    Title(String),
+    Description(String),
+    Date(String),
+    Tags(Vec<String>),
+}
+
+fn classify_line(line: &String, line_number: usize) -> Option<LineType> {
+    if let Some(val) = RE_LINKS.captures(line.as_str()) {
         let description = match val.get(3).map(|m| m.as_str()) {
             Some(val) => Some(String::from(val)),
             None => None,
@@ -63,111 +93,112 @@ fn is_link(content: &String, line_number: usize) -> Option<Links> {
             Some(val) => Some(String::from(val)),
             None => None,
         };
-        Some(Links {
+        Some(LineType::Link(Link {
             line_number,
             link: String::from(val.get(1).map(|m| m.as_str()).unwrap()),
             name: String::from(val.get(2).map(|m| m.as_str()).unwrap()),
             read_till: String::from(val.get(5).map(|m| m.as_str()).unwrap()),
             description,
             likeability,
-        })
-    } else {
-        None
-    }
-}
-
-fn is_metadata(content: &String, file_meta_data: &mut FileMetaData) -> bool {
-    lazy_static! {
-        static ref RE_TITLE: Regex = Regex::new(r"#\+(?i)title: *(.*)").unwrap();
-        static ref RE_DATE: Regex = Regex::new(r"#\+(?i)date: *\[(.*)\]").unwrap();
-        static ref RE_TAGS: Regex = Regex::new(r"#\+(?i)filetags: *:(.*):*").unwrap();
-        static ref RE_DESCRIPTION: Regex = Regex::new(r"#\+(?i)description: *(.*)").unwrap();
-    }
-                              
-    if let Some(val) = RE_TITLE.captures(content.as_str()) {
-        file_meta_data.file_title = Some(String::from(val.get(1).map(|m| m.as_str()).unwrap()));
-    } else if let Some(val) = RE_DESCRIPTION.captures(content.as_str()) {
-        file_meta_data.file_description =  Some(String::from(val.get(1).map(|m| m.as_str()).unwrap()));
-    } else if let Some(val) = RE_DATE.captures(content.as_str()) {
-        file_meta_data.file_creation_date = Some(String::from(val.get(1).map(|m| m.as_str()).unwrap()));
-    } else if let Some(val) = RE_TAGS.captures(content.as_str()) {
-        let tags_str: Vec<_> = val.get(1).map(|m| m.as_str()).unwrap().split(":").map(|s| s.to_string()).collect();
-        file_meta_data.file_tags = tags_str.to_owned();
-    } else {
-        return false;
-    }
-    return true;
-}
-
-fn is_heading(content: &String, line_number: usize) -> Option<Heading> {
-    lazy_static! {
-        static ref RE_HEADING: Regex = Regex::new(r"^(\*+) *(\w.*)").unwrap();
-    }
-    if let Some(val) = RE_HEADING.captures(content.as_str()) {
-        Some(Heading {
+        }))
+    } else if let Some(val) = RE_HEADING.captures(line.as_str()) {
+        Some(LineType::Heading(Heading {
             line_number,
             title: String::from(val.get(2).map(|m| m.as_str()).unwrap()),
             level: val.get(1).map(|m| m.as_str()).unwrap().len(),
             heading: vec![],
             links: vec![],
-        })
+        }))
+    } else if let Some(val) = RE_TITLE.captures(line.as_str()) {
+        Some(LineType::MetaData(MetaData::Title(String::from(
+            val.get(1).map(|m| m.as_str()).unwrap(),
+        ))))
+    } else if let Some(val) = RE_DESCRIPTION.captures(line.as_str()) {
+        Some(LineType::MetaData(MetaData::Description(String::from(
+            val.get(1).map(|m| m.as_str()).unwrap(),
+        ))))
+    } else if let Some(val) = RE_DATE.captures(line.as_str()) {
+        Some(LineType::MetaData(MetaData::Date(String::from(
+            val.get(1).map(|m| m.as_str()).unwrap(),
+        ))))
+    } else if let Some(val) = RE_TAGS.captures(line.as_str()) {
+        let tags_str: Vec<_> = val
+            .get(1)
+            .map(|m| m.as_str())
+            .unwrap()
+            .split(":")
+            .map(|s| s.to_string())
+            .collect();
+        Some(LineType::MetaData(MetaData::Tags(tags_str)))
     } else {
         None
     }
 }
 
-pub fn parse_org_file(path: PathBuf) -> FileData {
-    let mut data = FileData {
-        file_name: format!("{}", path.file_name().unwrap().to_str().unwrap()).to_string(),
-        file_meta_data: None,
-        level: 0,
-        heading: vec![],
-        links: vec![],
-    };
-
-    let mut file_meta_data = FileMetaData::default();
-
-    if let Ok(lines) = read_lines(path) {
-        let mut current_links_vec = &mut data.links;
-        let mut current_heading_vec = &mut data.heading;
-        let mut current_level = 0;
-        let mut len = 0;
-        for (index, line) in lines.enumerate() {
-            let line = line.unwrap();
-            if is_metadata(&line, &mut file_meta_data) {
-            } else if let Some(head) = is_heading(&line, index + 1) {
+fn parse_org_file(
+    data: &mut FileData,
+    file_meta_data: &mut FileMetaData,
+    lines: Lines<BufReader<File>>,
+) {
+    let mut current_links_vec = &mut data.links;
+    let mut current_heading_vec = &mut data.heading;
+    let mut current_level = 0;
+    let mut len = 0;
+    for (line_number, line) in lines.enumerate() {
+        let line = line.unwrap();
+        match classify_line(&line, line_number + 1) {
+            Some(LineType::Link(link)) => current_links_vec.push(link),
+            Some(LineType::Heading(heading)) => {
                 len = (&current_heading_vec).len();
-                if current_level > head.level - 1 {
+                if current_level > heading.level - 1 {
                     current_level = 0;
                     current_links_vec = &mut data.links;
                     current_heading_vec = &mut data.heading;
                     len = (&current_heading_vec).len();
-                    while len != 0 && (&current_heading_vec[len - 1]).level < head.level - 1 {
+                    while len != 0 && (&current_heading_vec[len - 1]).level < heading.level - 1 {
                         current_level = (&current_heading_vec[len - 1]).level;
                         unsafe {
                             current_links_vec =
-                                &mut *(&mut current_heading_vec[len - 1].links as *mut Vec<Links>);
+                                &mut *(&mut current_heading_vec[len - 1].links as *mut Vec<Link>);
                         }
                         current_heading_vec = &mut current_heading_vec[len - 1].heading;
                         len = (&current_heading_vec).len();
                     }
                 }
-                current_heading_vec.push(head);
+                current_heading_vec.push(heading);
                 len += 1;
                 current_level = (&current_heading_vec[len - 1]).level;
                 unsafe {
                     current_links_vec =
-                        &mut *(&mut current_heading_vec[len - 1].links as *mut Vec<Links>);
+                        &mut *(&mut current_heading_vec[len - 1].links as *mut Vec<Link>);
                 }
                 current_heading_vec = &mut current_heading_vec[len - 1].heading;
-            } else if let Some(link) = is_link(&line, index + 1) {
-                current_links_vec.push(link);
-            } else {
-                // println!("{line}");
             }
+            Some(LineType::MetaData(metadata)) => match metadata{
+                MetaData::Title(title) => file_meta_data.file_title = title,
+                MetaData::Description(description) => file_meta_data.file_description = description,
+                MetaData::Date(date) => file_meta_data.file_date = date,
+                MetaData::Tags(tags) => file_meta_data.file_tags = tags,
+            },
+            None => println!("Line can't be classified : {}", line.clone()),
         }
     }
-    // println!("{:#?}",&data);
-    data.file_meta_data = Some(file_meta_data);
+}
+
+pub fn read_org_file(path: PathBuf) -> FileData {
+    let mut data = FileData {
+        file_name: format!("{}", path.file_name().unwrap().to_str().unwrap()).to_string(),
+        file_meta_data: FileMetaData::default(),
+        level: 0,
+        heading: vec![],
+        links: vec![],
+    };
+
+    unsafe{
+        let file_meta_data = &mut *(&mut data.file_meta_data as *mut FileMetaData);
+        if let Ok(lines) = read_lines(path) {
+            parse_org_file(&mut data,file_meta_data, lines);
+        }
+    }
     data
 }
