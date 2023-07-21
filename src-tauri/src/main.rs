@@ -2,32 +2,38 @@
 // #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod config;
-mod org;
+mod file;
 
 use std::path::PathBuf;
 
-use crate::{config::config::parse_config, org::file::find_org_files};
-use config::config::Config;
+use crate::{
+    config::config::{parse_config, Config},
+    file::{file::*, parse::*},
+};
 use dirs;
-use org::parse::{read_org_file, FileData};
+use lazy_static::lazy_static;
+
+lazy_static! {
+    pub static ref COMMON_FOLDER_NAME: &'static str = env!("CARGO_PKG_NAME");
+    pub static ref CONFIG_PATH_GLOBAL: PathBuf = dirs::config_dir()
+        .expect("Unable to get Config Path")
+        .join::<&'static str>(COMMON_FOLDER_NAME.as_ref())
+        .join("config.toml");
+}
 
 #[tauri::command]
 fn get_config() -> Config {
-    let config_path = dirs::config_dir()
-        .unwrap()
-        .join(env!("CARGO_PKG_NAME"))
-        .join("config.toml");
-    parse_config(config_path)
+    parse_config(&CONFIG_PATH_GLOBAL)
 }
 
 #[tauri::command]
 fn get_files_list(notes_dir: PathBuf) -> Vec<PathBuf> {
-    find_org_files(notes_dir)
+    find_data_files(notes_dir)
 }
 
 #[tauri::command]
 fn get_file_data(file: PathBuf) -> FileData {
-    read_org_file(file)
+    read_data_file(file)
 }
 
 #[tauri::command]
@@ -53,7 +59,7 @@ fn main() {
 //         .join(env!("CARGO_PKG_NAME"))
 //         .join("config.toml");
 //     let config = parse_config(config_path);
-//     let files = find_org_files(config.notes_dir);
-//     let _ = read_org_file(files[0].clone());
-//     // println!("{:#?}", read_org_file(files[0].clone()));
+//     let files = find_data_files(config.notes_dir);
+//     let _ = read_data_file(files[0].clone());
+//     // println!("{:#?}", read_data_file(files[0].clone()));
 // }

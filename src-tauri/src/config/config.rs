@@ -36,7 +36,7 @@ fn create_config(config_path: &PathBuf) {
         .expect("Unable to get the parent directory from config path");
     let _ = std::fs::create_dir_all(config_dir);
     let default_config = toml::to_string(&Config{
-        notes_dir: dirs::home_dir().unwrap().join("Documents/linkorg"),
+        notes_dir: dirs::home_dir().unwrap().join("Documents").join(env!("CARGO_PKG_NAME")),
     }).unwrap();
     let mut config_file = std::fs::File::create(config_path).expect("Unable to create config file");
     config_file
@@ -44,7 +44,7 @@ fn create_config(config_path: &PathBuf) {
         .expect("Unable to write default config to the config file");
 }
 
-pub fn parse_config(config_path: PathBuf) -> Config {
+pub fn parse_config(config_path: &PathBuf) -> Config {
     if !config_path.exists() {
         create_config(&config_path);
     }
