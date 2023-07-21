@@ -1,12 +1,18 @@
 # Link Org
 
-This project aims to create a cross platform gui frontend for the `.org` for emacs with have links in the format of `[[link][description]]`
+This project aims to create a cross platform gui frontend for the `.org` for emacs with have links in the format of `[[link][description]]` and `.md` with links `[description](link)`
 
 There can be heading in org files which start with `*` with the no of `*` represting the level or depth of the heading
 
 Link format
 Lets take a book for example
 Links That will match
+## Md
+- Support for normal links  
+`  [Book name](Book link)         (Personal thoughts)   (Must read)   -- after 34`
+- Support for links inside a table  
+`| [Book name](Book link)       | (Personal thoughts) | (Must read) | -- after 34 |`
+## Org
 - Support for normal links  
 `  [[Book link][Book name]]         (Personal thoughts)   (Must read)   -- after 34`
 - Support for links inside a table  
@@ -40,6 +46,7 @@ After that using the regular expression in the parse.rs file it outputs a FileDa
 This then coverts the FileData struct into a graphical html and ts website which is then provided with data through the tauri interface from rust to js.
 
 # Future Goals
-- [-] Support more of the org file syntax like tags,File Description
+- [x] Support general mark up formats like markdown
+- [x] Support more of the org file syntax like tags,File Description
 - [ ] Remove unsafe code from the parser
 - [ ] Possible to update the file from the svelte frontend
