@@ -1,12 +1,25 @@
 use std::path::PathBuf;
-
-use glob::glob;
+use walkdir::WalkDir;
 
 pub fn find_data_files(path: PathBuf) -> Vec<PathBuf> {
-    let path = path.join("**/*.org");
-    let files: Vec<PathBuf> = glob(path.to_str().expect("Unable to convert OS path to str"))
-        .expect("Failed to read glob pattern")
-        .map(|file| file.unwrap())
+    let files = WalkDir::new(path)
+        .into_iter()
+        .filter_map(|entry| {
+            entry.ok().and_then(|e| {
+                let path = e.path();
+                if path.is_file() {
+                    path.extension().and_then(|ext| {
+                        if ext == "org" || ext == "md" {
+                            Some(path.to_path_buf())
+                        } else {
+                            None
+                        }
+                    })
+                } else {
+                    None
+                }
+            })
+        })
         .collect();
     files
 }
