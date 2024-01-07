@@ -11,9 +11,7 @@ filetags:   :testing:rust:orgmode:linkorg:
 [Table test book 3](Link to test book 3) (Mediocure book)             -- after 8 
 [Table test book 4](Link to test book 4)                              -- after 9 
 # Level 1 Table heading
-|------------------------------------------+------------------+-------------|-------------|
-| [Table test book 1](Link to test book 1) | (Good book)      | (Must read) | -- after 20 |
-| [Table test book 2](Link to test book 2) |                  | (Good read) | -- after 2  |
-| [Table test book 3](Link to test book 3) | (Mediocure book) |             | -- after 8  |
-| [Table test book 4](Link to test book 4) |                  |             | -- after 9  |
-|------------------------------------------+------------------+-------------+-------------|
+| [Table test book 1](Link to test book 1) | (Good book)      | (Must read) | -- after 20 |  
+| [Table test book 2](Link to test book 2) |                  | (Good read) | -- after 2  |  
+| [Table test book 3](Link to test book 3) | (Mediocure book) |             | -- after 8  |  
+| [Table test book 4](Link to test book 4) |                  |             | -- after 9  |  
