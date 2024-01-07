@@ -32,7 +32,7 @@ pnpm tauri dev
 ```
 
 By default linkorg looks for any files in your system's Documents folder (Only top level files).
-You can change it by changing the `notes_dir` variable in config.toml in you Config folder under linkorg.
+You can change it by changing the `notes_dir` variable in `(Default Config dir)/linkorg/config.toml`.
 # Working
 ## Backend
 The rust backend uses the glob crate to search through all the org files given under the path from the config file.
